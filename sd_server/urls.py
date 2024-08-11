@@ -17,15 +17,39 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
-from SDTasks import views
+import SDTasks.views
+import GPTBot.views
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="CarmiSystem API接口文档",
+        default_version='1.0',
+        description="描述信息",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="1422699629@qq.com"),
+        license=openapi.License(name="协议版本"),
+    ),
+    public=True,
+    # authentication_classes=[],
+    permission_classes=[permissions.AllowAny, ],
+)
 
 urlpatterns = [
     # path("admin/", admin.site.urls),
-    path("api/<str:version>/paramtran/", views.ParamTranView.as_view({"get": "list", "post": "create"}),
+    # 接口文档
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # SDTasks接口
+    path("api/<str:version>/paramtran/", SDTasks.views.ParamTranView.as_view({"get": "list", "post": "create"}),
          name='parameterTransmission'),
-    path("api/<str:version>/paramtran/<str:pk>", views.ParamTranView.as_view({"get": "retrieve"}),
+    path("api/<str:version>/paramtran/<str:pk>", SDTasks.views.ParamTranView.as_view({"get": "retrieve"}),
          name='parameterTransmissionDetail'),
-    path("api/<str:version>/paramtranTMP/", views.ParamTranViewTMP.as_view({"get": "list", "post": "create"}),
+    path("api/<str:version>/paramtranTMP/", SDTasks.views.ParamTranViewTMP.as_view({"get": "list", "post": "create"}),
          name='parameterTransmissionTMP'),
+    # GPTBot接口
+    path("api/<str:version>/gptbot/", GPTBot.views.GptBot.as_view({"post": "create"}),
+         name='GPTBot'),
 ]

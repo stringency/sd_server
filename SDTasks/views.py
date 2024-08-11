@@ -6,18 +6,22 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from openai import OpenAI, AssistantEventHandler
 
 from SDTasks.serializers import ParamTranSerializer
 
 from SDTasks.tasks import process_parameters
 
+
 # Create your views here.
-"""
-只能本地展示,负责转接参数到SDAPI
-"""
+
+
 
 
 class ParamTranViewTMP(GenericViewSet):
+    """
+    只能本地展示,负责转接参数到SDAPI
+    """
     serializer_class = ParamTranSerializer
 
     def list(self, request, *args, **kwargs):
@@ -46,13 +50,12 @@ class ParamTranViewTMP(GenericViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-"""
-能够线上部署的功能，利用消息队列操作
-优点：只要部署一个简单的传输参数的后端，算力交给个人电脑或者其他有算力的服务器
-"""
-
-
 class ParamTranView(GenericViewSet):
+    """
+    能够线上部署的功能，利用消息队列操作
+    优点：只要部署一个简单的传输参数的后端，算力交给个人电脑或者其他有算力的服务器
+    失败：暂时无法解决消息队列与接口的对接
+    """
     serializer_class = ParamTranSerializer
     result_data = None  # 类属性存储结果
 
