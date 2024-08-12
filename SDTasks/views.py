@@ -16,10 +16,9 @@ from SDTasks.tasks import process_parameters
 # Create your views here.
 
 
-
-
-class ParamTranViewTMP(GenericViewSet):
+class Txt2ImgTMPView(GenericViewSet):
     """
+    文生图
     只能本地展示,负责转接参数到SDAPI
     """
     serializer_class = ParamTranSerializer
@@ -50,7 +49,43 @@ class ParamTranViewTMP(GenericViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class ParamTranView(GenericViewSet):
+class Img2ImgTMPView(GenericViewSet):
+    """
+    图生图
+    只能本地展示,负责转接参数到SDAPI
+    """
+    serializer_class = ParamTranSerializer
+
+    def list(self, request, *args, **kwargs):
+        # 这里可以修改参数，例如增加或修改请求参数
+
+        # 将修改后的参数重新构建URL或请求
+        url = f"http://127.0.0.1:7860/sdapi/v1/progress?skip_current_image=false"
+
+        try:
+            # 发送请求到SDAPI
+            response = requests.get(url)
+            response.raise_for_status()
+            return Response(response.json(), status=status.HTTP_200_OK)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def create(self, request, *args, **kwargs):
+        parameters = request.data  # 获取处理后的参数
+        print(parameters)
+
+        try:
+            # 将参数传递给SDAPI
+            response = requests.post('http://127.0.0.1:7860/sdapi/v1/img2img', json=parameters)
+            response.raise_for_status()
+            # 返回SDAPI生成的图片或其他结果
+            return Response(response.json(), status=status.HTTP_200_OK)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class Txt2ImgView(GenericViewSet):
     """
     能够线上部署的功能，利用消息队列操作
     优点：只要部署一个简单的传输参数的后端，算力交给个人电脑或者其他有算力的服务器
@@ -67,7 +102,7 @@ class ParamTranView(GenericViewSet):
             result = json.loads(body)
             print("Result from SDAPI:", result)
             # 存储结果
-            ParamTranView.result_data = result
+            Txt2ImgView.result_data = result
 
         except Exception as e:
             print(f"Failed to process message: {e}")
@@ -99,8 +134,8 @@ class ParamTranView(GenericViewSet):
             print("Waiting for message... To exit press Ctrl+C")
             channel.start_consuming()
             # 返回处理后的结果
-            if ParamTranView.result_data:
-                return Response(ParamTranView.result_data, status=status.HTTP_200_OK)
+            if Txt2ImgView.result_data:
+                return Response(Txt2ImgView.result_data, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "No result available."}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:

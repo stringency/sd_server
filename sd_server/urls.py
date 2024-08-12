@@ -43,12 +43,16 @@ urlpatterns = [
     # 接口文档
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     # SDTasks接口
-    path("api/<str:version>/paramtran/", SDTasks.views.ParamTranView.as_view({"get": "list", "post": "create"}),
+    # 文生图
+    path("api/<str:version>/txt2img/", SDTasks.views.Txt2ImgView.as_view({"get": "list", "post": "create"}),
          name='parameterTransmission'),
-    path("api/<str:version>/paramtran/<str:pk>", SDTasks.views.ParamTranView.as_view({"get": "retrieve"}),
+    path("api/<str:version>/txt2img/<str:pk>", SDTasks.views.Txt2ImgView.as_view({"get": "retrieve"}),
          name='parameterTransmissionDetail'),
-    path("api/<str:version>/paramtranTMP/", SDTasks.views.ParamTranViewTMP.as_view({"get": "list", "post": "create"}),
+    path("api/<str:version>/txt2imgTMP/", SDTasks.views.Txt2ImgTMPView.as_view({"get": "list", "post": "create"}),
          name='parameterTransmissionTMP'),
+    # 图生图
+    path("api/<str:version>/img2imgTMP/", SDTasks.views.Img2ImgTMPView.as_view({"get": "list", "post": "create"}),
+         name='img2img'),
     # GPTBot接口
     path("api/<str:version>/gptbot/", GPTBot.views.GptBot.as_view({"post": "create"}),
          name='GPTBot'),
