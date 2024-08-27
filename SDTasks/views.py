@@ -11,6 +11,9 @@ from openai import OpenAI, AssistantEventHandler
 from SDTasks.serializers import ParamTranSerializer
 
 from SDTasks.tasks import process_parameters
+from ext.Img2MaskPIL import generate_mask_PIL
+from ext.sdtext_add_wb import sd_add_text
+from ext.text_add_b import add_black_text
 
 
 # Create your views here.
@@ -39,12 +42,25 @@ class Txt2ImgTMPView(GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         parameters = request.data  # 获取处理后的参数
+        parameters['alwayson_scripts']['controlnet']['args'][0]['image'], textIndex = add_black_text()
+        # print(parameters['alwayson_scripts']['controlnet']['args'][0]['image'])
         try:
             # 将参数传递给SDAPI
             response = requests.post('http://127.0.0.1:7860/sdapi/v1/txt2img', json=parameters)
             response.raise_for_status()
+            # print(response.json()['info'])
+            # 字符串转json，获取seed
+            print(json.loads(response.json()['info'])["seed"])
+            # 修改response响应里面的字段
+            # images字段
+            # print("改变前:", response.json()['images'])
+            response_alter = response.json()
+            response_alter["images"] = sd_add_text(response.json()['images'], textIndex)
+            # print("对比:", sd_add_text(response.json()['images'], textIndex))
+            # print("改变后:", response.json()['images'])
+
             # 返回SDAPI生成的图片或其他结果
-            return Response(response.json(), status=status.HTTP_200_OK)
+            return Response(response_alter, status=status.HTTP_200_OK)
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -72,17 +88,18 @@ class Img2ImgTMPView(GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         parameters = request.data  # 获取处理后的参数
-        print(parameters)
+        parameters["mask"] = generate_mask_PIL(parameters["init_images"][0])
 
         try:
             # 将参数传递给SDAPI
             response = requests.post('http://127.0.0.1:7860/sdapi/v1/img2img', json=parameters)
             response.raise_for_status()
+            print(json.loads(response.json()['info'])["seed"])
+            # print(response.json())
             # 返回SDAPI生成的图片或其他结果
             return Response(response.json(), status=status.HTTP_200_OK)
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 class Txt2ImgView(GenericViewSet):

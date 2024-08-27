@@ -56,4 +56,5 @@ urlpatterns = [
     # GPTBot接口
     path("api/<str:version>/gptbot/", GPTBot.views.GptBot.as_view({"post": "create"}),
          name='GPTBot'),
+    path("api/<str:version>/gptbotcancel/", GPTBot.views.GptBotCancel.as_view({"post": "create"}), name='GPTBotCancel'),
 ]
