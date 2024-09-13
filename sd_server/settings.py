@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     "rest_framework",
     "SDTasks",
-    "GPTBot"
+    "GPTBot"  # 这个模块上传时候已经被ignore，因为apikey的问题，可以调整到.env
 
 ]
 

@@ -54,6 +54,7 @@ urlpatterns = [
     path("api/<str:version>/img2imgTMP/", SDTasks.views.Img2ImgTMPView.as_view({"get": "list", "post": "create"}),
          name='img2img'),
     # GPTBot接口
+    # 这个模块上传时候已经被ignore，因为apikey的问题，可以调整到.env
     path("api/<str:version>/gptbot/", GPTBot.views.GptBot.as_view({"post": "create"}),
          name='GPTBot'),
     path("api/<str:version>/gptbotcancel/", GPTBot.views.GptBotCancel.as_view({"post": "create"}), name='GPTBotCancel'),
