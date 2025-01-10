@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'drf_yasg',
     "rest_framework",
+    "user_management",
     "SDTasks",
     "GPTBot"  # 这个模块上传时候已经被ignore，因为apikey的问题，可以调整到.env
 
@@ -78,18 +79,18 @@ WSGI_APPLICATION = "sd_server.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
     # "default": {
-    #     "ENGINE": "django.db.backends.mysql",
-    #     "NAME": "SDDB",
-    #     "USER": "root",
-    #     "PASSWORD": "yaung",
-    #     "HOST": "127.0.0.1",
-    #     "PORT": 3306,
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": BASE_DIR / "db.sqlite3",
     # }
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "SDDB",
+        "USER": "root",
+        "PASSWORD": "root",
+        "HOST": "127.0.0.1",
+        "PORT": 3306,
+    }
 }
 
 # Password validation
@@ -148,7 +149,7 @@ CACHES = {
         "LOCATION": "redis://127.0.0.1:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "PASSWORD": "yaung"
+            "PASSWORD": "root"
         }
     }
 }
@@ -167,3 +168,8 @@ REST_FRAMEWORK = {
     # 不传入版本时候的默认版本
     "DEFAULT_VERSION": "1.0",
 }
+
+try:
+    from local_settings import *  # noqa
+except ImportError:
+    pass

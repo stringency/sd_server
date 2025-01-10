@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -40,6 +40,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # path("admin/", admin.site.urls),
+    path('api/<str:version>/', include('user_management.urls')),
     # 接口文档
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     # SDTasks接口
@@ -49,6 +50,8 @@ urlpatterns = [
     path("api/<str:version>/txt2img/<str:pk>", SDTasks.views.Txt2ImgView.as_view({"get": "retrieve"}),
          name='parameterTransmissionDetail'),
     path("api/<str:version>/txt2imgTMP/", SDTasks.views.Txt2ImgTMPView.as_view({"get": "list", "post": "create"}),
+         name='parameterTransmissionTMP'),
+    path("api/<str:version>/txt2imganyTMP/", SDTasks.views.Txt2ImgAnyTMPView.as_view({"get": "list", "post": "create"}),
          name='parameterTransmissionTMP'),
     # 图生图
     path("api/<str:version>/img2imgTMP/", SDTasks.views.Img2ImgTMPView.as_view({"get": "list", "post": "create"}),

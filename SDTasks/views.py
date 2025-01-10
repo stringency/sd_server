@@ -42,7 +42,8 @@ class Txt2ImgTMPView(GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         parameters = request.data  # 获取处理后的参数
-        parameters['alwayson_scripts']['controlnet']['args'][0]['image'], textIndex = add_black_text()
+        # print(parameters)
+        # parameters['alwayson_scripts']['controlnet']['args'][0]['image'], textIndex = add_black_text() # 创建文字图片
         # print(parameters['alwayson_scripts']['controlnet']['args'][0]['image'])
         try:
             # 将参数传递给SDAPI
@@ -55,7 +56,7 @@ class Txt2ImgTMPView(GenericViewSet):
             # images字段
             # print("改变前:", response.json()['images'])
             response_alter = response.json()
-            response_alter["images"] = sd_add_text(response.json()['images'], textIndex)
+            # response_alter["images"] = sd_add_text(response.json()['images'], textIndex) # 加入文字图片
             # print("对比:", sd_add_text(response.json()['images'], textIndex))
             # print("改变后:", response.json()['images'])
 
@@ -101,6 +102,52 @@ class Img2ImgTMPView(GenericViewSet):
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class Txt2ImgAnyTMPView(GenericViewSet):
+    """
+    文生图
+    只能本地展示,负责转接参数到SDAPI
+    """
+    serializer_class = ParamTranSerializer
+
+    def list(self, request, *args, **kwargs):
+        # 这里可以修改参数，例如增加或修改请求参数
+
+        # 将修改后的参数重新构建URL或请求
+        url = f"http://127.0.0.1:7860/sdapi/v1/progress?skip_current_image=false"
+
+        try:
+            # 发送请求到SDAPI
+            response = requests.get(url)
+            response.raise_for_status()
+            return Response(response.json(), status=status.HTTP_200_OK)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def create(self, request, *args, **kwargs):
+        parameters = request.data  # 获取处理后的参数
+        # print(parameters)
+        # parameters['alwayson_scripts']['controlnet']['args'][0]['image'], textIndex = add_black_text()
+        # print(parameters['alwayson_scripts']['controlnet']['args'][0]['image'])
+        try:
+            # 将参数传递给SDAPI
+            response = requests.post('http://127.0.0.1:7860/sdapi/v1/txt2img', json=parameters)
+            response.raise_for_status()
+            # print(response.json()['info'])
+            # 字符串转json，获取seed
+            print(json.loads(response.json()['info'])["seed"])
+            # 修改response响应里面的字段
+            # images字段
+            # print("改变前:", response.json()['images'])
+            response_alter = response.json()
+            # response_alter["images"] = sd_add_text(response.json()['images'], textIndex)
+            # print("对比:", sd_add_text(response.json()['images'], textIndex))
+            # print("改变后:", response.json()['images'])
+
+            # 返回SDAPI生成的图片或其他结果
+            return Response(response_alter, status=status.HTTP_200_OK)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Txt2ImgView(GenericViewSet):
     """
