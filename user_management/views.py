@@ -6,7 +6,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from user_management import models
-from user_management.serializers import UserInfoSerializer
+from user_management.serializers import UserInfoSerializer, RegisterSerializer, LoginSerializer
+
+from common.utils.custom_response import Success, Fail
 
 
 class UserInfoView(ModelViewSet):
@@ -21,28 +23,26 @@ class UserInfoView(ModelViewSet):
     queryset = models.UserInfo.objects.all()
     serializer_class = UserInfoSerializer
 
-    @action(methods=["post"], detail=False, url_path="register")
+    @action(methods=["post"], detail=False, authentication_classes=[])
     def register(self, request, *args, **kwargs):
         """用户注册"""
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "注册成功"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop("confirm_password")
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(methods=["post"], detail=False, url_path="login")
+    @action(methods=["post"], detail=False, authentication_classes=[])
     def login(self, request, *args, **kwargs):
         """用户登录"""
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data["user"]
-            # 为用户生成一个唯一的Token
-            user.token = uuid.uuid4().hex
-            user.save()
-            return Response({
-                "message": "登录成功",
-                "token": user.token,
-                "username": user.username,
-                "role": user.get_role_display(),
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = models.UserInfo.objects.filter(**serializer.validated_data).first()
+        if not user:
+            return Response("账号不存在或者账号密码错误！")
+        # 为用户生成一个唯一的Token
+        user.token = str(uuid.uuid4().hex)
+        user.save()
+        ret_ser = LoginSerializer(instance=user)
+        return Response(data=ret_ser.data, status=status.HTTP_200_OK)

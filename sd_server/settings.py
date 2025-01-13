@@ -164,9 +164,16 @@ REST_FRAMEWORK = {
     # URL版本参数名
     "VERSION_PARAM": "version",
     # 允许的版本
-    "ALLOWED_VERSIONS": ["1.0", "2.0", ],
+    "ALLOWED_VERSIONS": ["v1", "v2", ],
     # 不传入版本时候的默认版本
-    "DEFAULT_VERSION": "1.0",
+    "DEFAULT_VERSION": "v1",
+
+    # token认证
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "common.auth.QueryParamsAuthentication",
+        "common.auth.HeaderAuthentication",
+        "common.auth.NOAuthentication",
+    ],
 }
 
 try:
