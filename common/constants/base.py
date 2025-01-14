@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+
+# db field length
+SHORT = 32
+NORMAL = 64
+MIDDLE = 128
+LONG = 255
+X_LONG = 1000
+XX_LONG = 10000
+XXX_LONG = 20000
+
+# db field default value
+EMPTY_INT = 0
+EMPTY_STRING = ""
+EMPTY_DISPLAY_STRING = "--"
+EMPTY_LIST = list
+EMPTY_DICT = dict
+EMPTY_FLOAT = 0.00
+DEFAULT_DISPLAY_STRING = "-"
+
+CELERY_MAX_RETRY_TIME = 60

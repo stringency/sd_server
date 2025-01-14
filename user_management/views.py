@@ -31,7 +31,7 @@ class UserInfoView(ModelViewSet):
         serializer.validated_data.pop("confirm_password")
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Success(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(methods=["post"], detail=False, authentication_classes=[])
     def login(self, request, *args, **kwargs):
@@ -40,9 +40,9 @@ class UserInfoView(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = models.UserInfo.objects.filter(**serializer.validated_data).first()
         if not user:
-            return Response("账号不存在或者账号密码错误！")
+            return Fail("账号不存在或者账号密码错误！")
         # 为用户生成一个唯一的Token
         user.token = str(uuid.uuid4().hex)
         user.save()
         ret_ser = LoginSerializer(instance=user)
-        return Response(data=ret_ser.data, status=status.HTTP_200_OK)
+        return Success(data=ret_ser.data, status=status.HTTP_200_OK)
