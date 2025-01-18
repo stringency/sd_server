@@ -46,3 +46,8 @@ class UserInfoView(ModelViewSet):
         user.save()
         ret_ser = LoginSerializer(instance=user)
         return Success(data=ret_ser.data, status=status.HTTP_200_OK)
+
+    @action(methods=["post"], detail=False)
+    def get_user_img_info(self, request, *args, **kwargs):
+        """获取当前用户的图片信息"""
+        pass
