@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 from user_management.models import (
     UserInfo,
 )
+from SDTasks.models import ImgInfo
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -46,11 +47,9 @@ class LoginSerializer(serializers.ModelSerializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = UserInfo
         fields = "__all__"
-
 
     # def validate(self, attrs):
     #     request = self.context['request']  # 获取请求对象
@@ -84,3 +83,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
     #     return "name:
     # def get_status(self, obj):
     #     return obj.get_carmi_status_display()
+
+
+class UserImgInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImgInfo
+        fields = "__all__"

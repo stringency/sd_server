@@ -5,8 +5,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from user_management import models
-from user_management.serializers import UserInfoSerializer, RegisterSerializer, LoginSerializer
+from SDTasks.models import ImgInfo
+from user_management.models import UserInfo
+from user_management.serializers import UserInfoSerializer, RegisterSerializer, LoginSerializer, UserImgInfoSerializer
 
 from common.utils.custom_response import Success, Fail
 
@@ -20,7 +21,7 @@ class UserInfoView(ModelViewSet):
     # filter_backends = [DjangoFilterBackend,]
     # filterset_class = UserInfoFilterSet
 
-    queryset = models.UserInfo.objects.all()
+    queryset = UserInfo.objects.all()
     serializer_class = UserInfoSerializer
 
     @action(methods=["post"], detail=False, authentication_classes=[])
@@ -38,7 +39,7 @@ class UserInfoView(ModelViewSet):
         """用户登录"""
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = models.UserInfo.objects.filter(**serializer.validated_data).first()
+        user = UserInfo.objects.filter(**serializer.validated_data).first()
         if not user:
             return Fail("账号不存在或者账号密码错误！")
         # 为用户生成一个唯一的Token
@@ -47,7 +48,22 @@ class UserInfoView(ModelViewSet):
         ret_ser = LoginSerializer(instance=user)
         return Success(data=ret_ser.data, status=status.HTTP_200_OK)
 
-    @action(methods=["post"], detail=False)
-    def get_user_img_info(self, request, *args, **kwargs):
+    @action(methods=["get"], detail=False)
+    def user_img_info_list(self, request, *args, **kwargs):
         """获取当前用户的图片信息"""
-        pass
+        username = self.request.user.username
+        img_info = UserImgInfoSerializer(ImgInfo.objects.filter(username=username).all())
+        return Success(data=img_info, status=status.HTTP_200_OK)
+
+    @action(methods=["get"], detail=False)
+    def user_img_info_retrieve(self, request, *args, **kwargs):
+        """获取当前用户的图片信息详情"""
+        img_id = self.kwargs.get("img_id")
+        username = self.request.user.username
+        img_info = UserImgInfoSerializer(ImgInfo.objects.filter(username=username, id=img_id).all())
+        return Success(data=img_info, status=status.HTTP_200_OK)
+
+
+USER_PATH = "USERRES"
+
+IMG_INFO_PATH = "IMG_INFO"
