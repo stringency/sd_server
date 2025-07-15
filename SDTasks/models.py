@@ -27,10 +27,21 @@ class ImgInfo(models.Model):
         (TXTTOIMG, "文生图"),
         (IMGTOIMG, "图生图"),
     )
-    img_path = models.CharField(verbose_name="图片地址", max_length=XX_LONG)
+    PENDING = "pending"
+    SUCCESS = "success"
+    FAILURE = "failure"
+    IMG_STATUS_MAP = (
+        (PENDING, "正在生图"),
+        (SUCCESS, "生图完成"),
+        (FAILURE, "生图失败"),
+    )
+
+    img_path = models.CharField(verbose_name="图片地址", max_length=XX_LONG, null=True)
     img_logo = models.BinaryField(verbose_name="图片缩略图", max_length=XX_LONG, null=True)
     username = models.ForeignKey(UserInfo, on_delete=models.CASCADE, null=True, blank=True)
     img_type = models.CharField(verbose_name="图片类型", max_length=NORMAL, choices=IMG_TPYE_MAP, default=TXTTOIMG)
-    img_name = models.CharField("图片名称", max_length=X_LONG, default=EMPTY_STRING)
-    desc = models.TextField("描述信息", default=EMPTY_STRING)
+    img_name = models.CharField("图片名称", max_length=X_LONG, null=True)
+    img_status = models.CharField("图片状态", max_length=X_LONG, choices=IMG_STATUS_MAP, default=PENDING)
+    task_id = models.TextField("任务ID", null=True)
+    desc = models.TextField("描述信息", null=True)
 

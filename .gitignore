@@ -160,6 +160,8 @@ cython_debug/
 .idea/
 
 # myfile
-/GPTBot/
+#/GPTBot/
 /assets/models
 /USERRES/
+
+test.py

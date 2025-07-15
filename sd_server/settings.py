@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +25,7 @@ SECRET_KEY = "django-insecure-yy!rjdr585+y=f2rnwcewk6q$ps^cgy(309ol(rrgz0a6^r(1d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "10.0.2.2"]
+ALLOWED_HOSTS = ["127.0.0.1", "10.0.2.2", "10.105.164.201"]
 
 # Application definition
 
@@ -134,14 +135,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Celery设置
-# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
-# CELERY_RESULT_BACKEND = 'redis://:yaung@127.0.0.1:6379/1'  # 0用于保存默认缓存
-# CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'Asia/Shanghai'
-
 # redis的缓存配置
 CACHES = {
     "default": {
@@ -151,6 +144,38 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "PASSWORD": "root"
         }
+    }
+}
+
+# ---------------- celery 相关配置 ----------------------
+# Broker配置，使用Redis作为消息中间件
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+# BACKEND配置，使用Redis作为结果仓库
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/2'
+
+# 指定 Celery 能够接受的内容类型列表
+CELERY_ACCEPT_CONTENT = ['json']
+# 任务将以json格式进行序列化
+CELERY_TASK_SERIALIZER = 'json'
+# 结果以json格式进行序列化存储或传输
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 任务结果过期时间(单位:秒)
+CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24
+# 时区配置
+CELERY_TIMEZONE = "Asia/Shanghai"
+
+CELERY_CELERYBEAT_SCHEDULE = {
+    # 自定义周期执行的任务
+    'add-every-10-seconds': {
+        # 执行的任务
+        'task': 'django_celery.tasks.add',
+        # 执行时间设置
+        # 'schedule': 1.0,  # 1秒执行一次
+        # 'schedule': crontab(minute='*/1'),  # 1分钟执行 * 次
+        # 'schedule': crontab(month_of_year="4", day_of_month="11", hour="8", minute="42"), # 每年4月11号，8点42分执行
+        'schedule': datetime.timedelta(seconds=10),  # 每10秒执行一次
+        'args': (123, 321)
     }
 }
 
@@ -173,6 +198,8 @@ REST_FRAMEWORK = {
         "common.auth.QueryParamsAuthentication",
         "common.auth.HeaderAuthentication",
         "common.auth.NOAuthentication",
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
     ],
 }
 

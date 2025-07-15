@@ -1,3 +1,4 @@
+import base64
 import uuid
 
 from rest_framework import status
@@ -51,17 +52,41 @@ class UserInfoView(ModelViewSet):
     @action(methods=["get"], detail=False)
     def user_img_info_list(self, request, *args, **kwargs):
         """获取当前用户的图片信息"""
+        img_id = request.query_params.get("img_id", "")
         username = self.request.user.username
-        img_info = UserImgInfoSerializer(ImgInfo.objects.filter(username=username).all())
-        return Success(data=img_info, status=status.HTTP_200_OK)
+        user = UserInfo.objects.filter(username=username).first()
 
-    @action(methods=["get"], detail=False)
-    def user_img_info_retrieve(self, request, *args, **kwargs):
-        """获取当前用户的图片信息详情"""
-        img_id = self.kwargs.get("img_id")
-        username = self.request.user.username
-        img_info = UserImgInfoSerializer(ImgInfo.objects.filter(username=username, id=img_id).all())
-        return Success(data=img_info, status=status.HTTP_200_OK)
+        if not user:
+            return Fail(message="用户不存在", status=status.HTTP_400_BAD_REQUEST)
+
+        if img_id:
+            queryset = ImgInfo.objects.filter(username=user.id, id=img_id).all().order_by("-id")
+        else:
+            queryset = ImgInfo.objects.filter(username=user.id).all().order_by("-id")
+
+        # 处理序列化数据
+        img_info_data = UserImgInfoSerializer(queryset, many=True).data
+
+        # 如果传入了 img_id，获取原图并转 base64
+        if img_id and queryset.exists():
+            img_obj = queryset.first()
+            if img_obj.img_path:
+                try:
+                    with open(img_obj.img_path, "rb") as f:
+                        img_base64 = base64.b64encode(f.read()).decode("utf-8")
+                        img_info_data[0]["img_base64"] = img_base64
+                except Exception as e:
+                    return Fail(message=f"读取图片失败: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Success(data=img_info_data, status=status.HTTP_200_OK)
+
+    # @action(methods=["get"], detail=False)
+    # def user_img_info_retrieve(self, request, *args, **kwargs):
+    #     """获取当前用户的图片信息详情"""
+    #     img_id = self.kwargs.get("img_id")
+    #     username = self.request.user.username
+    #     img_info = UserImgInfoSerializer(ImgInfo.objects.filter(username=user_id).all(), many=True)
+    #     return Success(data=img_info, status=status.HTTP_200_OK)
 
 
 USER_PATH = "USERRES"
